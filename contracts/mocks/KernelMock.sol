@@ -5,7 +5,7 @@ import "../interfaces/IRewards.sol";
 
 contract KernelMock {
     IRewards public r;
-    uint256 public entrStaked;
+    uint256 public leagStaked;
     mapping(address => uint256) private balances;
 
     function setRewards(address rewards) public {
@@ -20,7 +20,7 @@ contract KernelMock {
         callRegisterUserAction(user);
 
         balances[user] = balances[user] + amount;
-        entrStaked = entrStaked + amount;
+        leagStaked = leagStaked + amount;
     }
 
     function withdraw(address user, uint256 amount) public {
@@ -29,7 +29,7 @@ contract KernelMock {
         callRegisterUserAction(user);
 
         balances[user] = balances[user] - amount;
-        entrStaked = entrStaked - amount;
+        leagStaked = leagStaked - amount;
     }
 
     function balanceOf(address user) public view returns (uint256) {

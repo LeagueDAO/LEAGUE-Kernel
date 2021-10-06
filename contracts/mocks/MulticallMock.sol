@@ -9,15 +9,15 @@ contract MulticallMock {
     using SafeMath for uint256;
 
     IKernel kernel;
-    IERC20 entr;
+    IERC20 leag;
 
-    constructor(address _kernel, address _entr) {
+    constructor(address _kernel, address _leag) {
         kernel = IKernel(_kernel);
-        entr = IERC20(_entr);
+        leag = IERC20(_leag);
     }
 
     function multiDelegate(uint256 amount, address user1, address user2) public {
-        entr.approve(address(kernel), amount);
+        leag.approve(address(kernel), amount);
 
         kernel.deposit(amount);
         kernel.delegate(user1);
@@ -26,7 +26,7 @@ contract MulticallMock {
     }
 
     function multiDeposit(uint256 amount) public {
-        entr.approve(address(kernel), amount.mul(3));
+        leag.approve(address(kernel), amount.mul(3));
 
         kernel.deposit(amount);
         kernel.deposit(amount);

@@ -21,8 +21,8 @@ contract KernelFacet {
     event DelegatedPowerIncreased(address indexed from, address indexed to, uint256 amount, uint256 to_newDelegatedPower);
     event DelegatedPowerDecreased(address indexed from, address indexed to, uint256 amount, uint256 to_newDelegatedPower);
 
-    function initKernel(address _entr, address _rewards) public {
-        require(_entr != address(0), "ENTR address must not be 0x0");
+    function initKernel(address _leag, address _rewards) public {
+        require(_leag != address(0), "LEAG address must not be 0x0");
 
         LibKernelStorage.Storage storage ds = LibKernelStorage.kernelStorage();
 
@@ -31,16 +31,16 @@ contract KernelFacet {
 
         ds.initialized = true;
 
-        ds.entr = IERC20(_entr);
+        ds.leag = IERC20(_leag);
         ds.rewards = IRewards(_rewards);
     }
 
-    // deposit allows a user to add more entr to his staked balance
+    // deposit allows a user to add more leag to his staked balance
     function deposit(uint256 amount) public {
         require(amount > 0, "Amount must be greater than 0");
 
        LibKernelStorage.Storage storage ds = LibKernelStorage.kernelStorage();
-        uint256 allowance = ds.entr.allowance(msg.sender, address(this));
+        uint256 allowance = ds.leag.allowance(msg.sender, address(this));
         require(allowance >= amount, "Token allowance too small");
 
         // this must be called before the user's balance is updated so the rewards contract can calculate
@@ -51,7 +51,7 @@ contract KernelFacet {
 
         uint256 newBalance = balanceOf(msg.sender).add(amount);
         _updateUserBalance(ds.userStakeHistory[msg.sender], newBalance);
-        _updateLockedEntr(entrStakedAtTs(block.timestamp).add(amount));
+        _updateLockedLeag(leagStakedAtTs(block.timestamp).add(amount));
 
         address delegatedTo = userDelegatedTo(msg.sender);
         if (delegatedTo != address(0)) {
@@ -60,7 +60,7 @@ contract KernelFacet {
 
             emit DelegatedPowerIncreased(msg.sender, delegatedTo, amount, newDelegatedPower);
         }
-        ds.entr.transferFrom(msg.sender, address(this), amount);
+        ds.leag.transferFrom(msg.sender, address(this), amount);
 
         emit Deposit(msg.sender, amount, newBalance);
     }
@@ -82,7 +82,7 @@ contract KernelFacet {
         }
 
         _updateUserBalance(ds.userStakeHistory[msg.sender], balance.sub(amount));
-        _updateLockedEntr(entrStakedAtTs(block.timestamp).sub(amount));
+        _updateLockedLeag(leagStakedAtTs(block.timestamp).sub(amount));
 
         address delegatedTo = userDelegatedTo(msg.sender);
         if (delegatedTo != address(0)) {
@@ -92,7 +92,7 @@ contract KernelFacet {
             emit DelegatedPowerDecreased(msg.sender, delegatedTo, amount, newDelegatedPower);
         }
 
-        ds.entr.transfer(msg.sender, amount);
+        ds.leag.transfer(msg.sender, amount);
 
         emit Withdraw(msg.sender, amount, balance.sub(amount));
     }
@@ -153,12 +153,12 @@ contract KernelFacet {
         return delegate(address(0));
     }
 
-    // balanceOf returns the current ENTR balance of a user (bonus not included)
+    // balanceOf returns the current LEAG balance of a user (bonus not included)
     function balanceOf(address user) public view returns (uint256) {
         return balanceAtTs(user, block.timestamp);
     }
 
-    // balanceAtTs returns the amount of ENTR that the user currently staked (bonus NOT included)
+    // balanceAtTs returns the amount of LEAG that the user currently staked (bonus NOT included)
     function balanceAtTs(address user, uint256 timestamp) public view returns (uint256) {
         LibKernelStorage.Stake memory stake = stakeAtTs(user, timestamp);
 
@@ -219,15 +219,15 @@ contract KernelFacet {
         return ownVotingPower.add(delegatedVotingPower);
     }
 
-    // entrStaked returns the total raw amount of ENTR staked at the current block
-    function entrStaked() public view returns (uint256) {
-        return entrStakedAtTs(block.timestamp);
+    // leagStaked returns the total raw amount of LEAG staked at the current block
+    function leagStaked() public view returns (uint256) {
+        return leagStakedAtTs(block.timestamp);
     }
 
-    // entrStakedAtTs returns the total raw amount of ENTR users have deposited into the contract
+    // leagStakedAtTs returns the total raw amount of LEAG users have deposited into the contract
     // it does not include any bonus
-    function entrStakedAtTs(uint256 timestamp) public view returns (uint256) {
-        return _checkpointsBinarySearch(LibKernelStorage.kernelStorage().entrStakedHistory, timestamp);
+    function leagStakedAtTs(uint256 timestamp) public view returns (uint256) {
+        return _checkpointsBinarySearch(LibKernelStorage.kernelStorage().leagStakedHistory, timestamp);
     }
 
     // delegatedPower returns the total voting power that a user received from other users
@@ -361,14 +361,14 @@ contract KernelFacet {
         }
     }
 
-    // _updateLockedEntr stores the new `amount` into the ENTR locked history
-    function _updateLockedEntr(uint256 amount) internal {
+    // _updateLockedLeag stores the new `amount` into the LEAG locked history
+    function _updateLockedLeag(uint256 amount) internal {
         LibKernelStorage.Storage storage ds = LibKernelStorage.kernelStorage();
 
-        if (ds.entrStakedHistory.length == 0 || ds.entrStakedHistory[ds.entrStakedHistory.length - 1].timestamp < block.timestamp) {
-            ds.entrStakedHistory.push(LibKernelStorage.Checkpoint(block.timestamp, amount));
+        if (ds.leagStakedHistory.length == 0 || ds.leagStakedHistory[ds.leagStakedHistory.length - 1].timestamp < block.timestamp) {
+            ds.leagStakedHistory.push(LibKernelStorage.Checkpoint(block.timestamp, amount));
         } else {
-            LibKernelStorage.Checkpoint storage old = ds.entrStakedHistory[ds.entrStakedHistory.length - 1];
+            LibKernelStorage.Checkpoint storage old = ds.leagStakedHistory[ds.leagStakedHistory.length - 1];
             old.amount = amount;
         }
     }

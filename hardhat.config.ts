@@ -8,7 +8,7 @@ import 'solidity-coverage';
 import 'hardhat-gas-reporter';
 
 task('deploy', 'Deploys the Kernel Diamond with all of its facets')
-    .addParam('entr', 'The ENTR token address')
+    .addParam('leag', 'The leag token address')
     .addParam('cv', 'The community vault address')
     .addParam('start', 'The Start timestamp of the rewards')
     .addParam('days', 'The number of days the rewards should run')
@@ -16,7 +16,7 @@ task('deploy', 'Deploys the Kernel Diamond with all of its facets')
     .setAction(async (args) => {
         const deployKernel = require('./scripts/deploy');
         await deployKernel(
-            args.entr,
+            args.leag,
             args.cv,
             args.start,
             args.days,

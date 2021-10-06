@@ -4,7 +4,7 @@ import { KernelFacet, OwnershipFacet, Rewards } from "../typechain";
 import { getDiamondCut } from "../utils/deploy";
 import { diamondAsFacet } from "../utils/diamond";
 
-async function deploy(entr: string, cv: string, sStart: string, sDays: string, rewardsAmount: string) {
+async function deploy(leag: string, cv: string, sStart: string, sDays: string, rewardsAmount: string) {
     const days = Number.parseInt(sDays);
     const start = Number.parseInt(sStart)
 
@@ -47,7 +47,7 @@ async function deploy(entr: string, cv: string, sStart: string, sDays: string, r
      * Deploying Rewards
      */
     console.log('Deploying Rewards...');
-    const rewards = (await deployer.deployContract('Rewards', [deployerAddress, entr, diamond.address])) as Rewards;
+    const rewards = (await deployer.deployContract('Rewards', [deployerAddress, leag, diamond.address])) as Rewards;
     console.log(`Rewards deployed at: ${rewards.address}`);
 
     console.log('Setup Rewards...');
@@ -59,7 +59,7 @@ async function deploy(entr: string, cv: string, sStart: string, sDays: string, r
      */
     console.log('Initialising Kernel...');
     const kf = (await diamondAsFacet(diamond, 'KernelFacet')) as KernelFacet;
-    await kf.initKernel(entr, rewards.address);
+    await kf.initKernel(leag, rewards.address);
     console.log('Initialised Kernel');
 
     /**
@@ -107,7 +107,7 @@ async function deploy(entr: string, cv: string, sStart: string, sDays: string, r
     console.log('Verifying Rewards on Etherscan...');
     await hardhat.run('verify:verify', {
         address: rewards.address,
-        constructorArguments: [deployerAddress, entr, diamond.address]
+        constructorArguments: [deployerAddress, leag, diamond.address]
     });
 
     console.log(`Finished Deployment!`);

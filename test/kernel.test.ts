@@ -11,7 +11,7 @@ import { moveAtTimestamp } from '../utils/helpers';
 describe('Kernel', function () {
     const amount = BigNumber.from(100).mul(BigNumber.from(10).pow(18));
 
-    let kernel: KernelFacet, entr: Erc20Mock, rewardsMock: RewardsMock, changeRewards: ChangeRewardsFacet;
+    let kernel: KernelFacet, leag: Erc20Mock, rewardsMock: RewardsMock, changeRewards: ChangeRewardsFacet;
 
     let user: Signer, userAddress: string;
     let happyPirate: Signer, happyPirateAddress: string;
@@ -21,7 +21,7 @@ describe('Kernel', function () {
 
     before(async function () {
         await setupSigners();
-        entr = (await deploy.deployContract('ERC20Mock')) as Erc20Mock;
+        leag = (await deploy.deployContract('ERC20Mock')) as Erc20Mock;
 
         const cutFacet = await deploy.deployContract('DiamondCutFacet');
         const loupeFacet = await deploy.deployContract('DiamondLoupeFacet');
@@ -38,7 +38,7 @@ describe('Kernel', function () {
 
         changeRewards = (await diamondAsFacet(diamond, 'ChangeRewardsFacet')) as ChangeRewardsFacet;
         kernel = (await diamondAsFacet(diamond, 'KernelFacet')) as KernelFacet;
-        await kernel.initKernel(entr.address, rewardsMock.address);
+        await kernel.initKernel(leag.address, rewardsMock.address);
     });
 
     beforeEach(async function () {
@@ -86,15 +86,15 @@ describe('Kernel', function () {
             await prepareAccount(user, amount);
             await kernel.connect(user).deposit(amount);
 
-            expect(await entr.transferFromCalled()).to.be.true;
-            expect(await entr.balanceOf(kernel.address)).to.be.equal(amount);
+            expect(await leag.transferFromCalled()).to.be.true;
+            expect(await leag.balanceOf(kernel.address)).to.be.equal(amount);
         });
 
-        it('updates the total of entr locked', async function () {
+        it('updates the total of leag locked', async function () {
             await prepareAccount(user, amount);
             await kernel.connect(user).deposit(amount);
 
-            expect(await kernel.entrStaked()).to.be.equal(amount);
+            expect(await kernel.leagStaked()).to.be.equal(amount);
         });
 
         it('updates the delegated user\'s voting power if user delegated his balance', async function () {
@@ -110,9 +110,9 @@ describe('Kernel', function () {
         });
 
         it('works with multiple deposit in same block', async function () {
-            const multicall = (await deploy.deployContract('MulticallMock', [kernel.address, entr.address])) as MulticallMock;
+            const multicall = (await deploy.deployContract('MulticallMock', [kernel.address, leag.address])) as MulticallMock;
 
-            await entr.mint(multicall.address, amount.mul(5));
+            await leag.mint(multicall.address, amount.mul(5));
 
             await multicall.multiDeposit(amount);
 
@@ -181,10 +181,10 @@ describe('Kernel', function () {
         });
     });
 
-    describe('entrStakedAtTs', function () {
+    describe('leagStakedAtTs', function () {
         it('returns 0 if no checkpoint', async function () {
             const ts = await helpers.getLatestBlockTimestamp();
-            expect(await kernel.entrStakedAtTs(ts)).to.be.equal(0);
+            expect(await kernel.leagStakedAtTs(ts)).to.be.equal(0);
         });
 
         it('returns 0 if timestamp older than first checkpoint', async function () {
@@ -193,7 +193,7 @@ describe('Kernel', function () {
 
             const ts = await helpers.getLatestBlockTimestamp();
 
-            expect(await kernel.entrStakedAtTs(ts - 1)).to.be.equal(0);
+            expect(await kernel.leagStakedAtTs(ts - 1)).to.be.equal(0);
         });
 
         it('returns correct balance if timestamp newer than latest checkpoint', async function () {
@@ -202,7 +202,7 @@ describe('Kernel', function () {
 
             const ts = await helpers.getLatestBlockTimestamp();
 
-            expect(await kernel.entrStakedAtTs(ts + 1)).to.be.equal(amount);
+            expect(await kernel.leagStakedAtTs(ts + 1)).to.be.equal(amount);
         });
 
         it('returns correct balance if timestamp between checkpoints', async function () {
@@ -214,12 +214,12 @@ describe('Kernel', function () {
             await helpers.moveAtTimestamp(ts + 30);
             await kernel.connect(user).deposit(amount);
 
-            expect(await kernel.entrStakedAtTs(ts + 15)).to.be.equal(amount);
+            expect(await kernel.leagStakedAtTs(ts + 15)).to.be.equal(amount);
 
             await helpers.moveAtTimestamp(ts + 60);
             await kernel.connect(user).deposit(amount);
 
-            expect(await kernel.entrStakedAtTs(ts + 45)).to.be.equal(amount.mul(2));
+            expect(await kernel.leagStakedAtTs(ts + 45)).to.be.equal(amount.mul(2));
         });
     });
 
@@ -265,22 +265,22 @@ describe('Kernel', function () {
             await prepareAccount(user, amount.mul(2));
             await kernel.connect(user).deposit(amount.mul(2));
 
-            expect(await entr.balanceOf(kernel.address)).to.be.equal(amount.mul(2));
+            expect(await leag.balanceOf(kernel.address)).to.be.equal(amount.mul(2));
 
             await kernel.connect(user).withdraw(amount);
 
-            expect(await entr.transferCalled()).to.be.true;
-            expect(await entr.balanceOf(userAddress)).to.be.equal(amount);
-            expect(await entr.balanceOf(kernel.address)).to.be.equal(amount);
+            expect(await leag.transferCalled()).to.be.true;
+            expect(await leag.balanceOf(userAddress)).to.be.equal(amount);
+            expect(await leag.balanceOf(kernel.address)).to.be.equal(amount);
         });
 
-        it('updates the total of entr locked', async function () {
+        it('updates the total of leag locked', async function () {
             await prepareAccount(user, amount);
             await kernel.connect(user).deposit(amount);
-            expect(await kernel.entrStaked()).to.be.equal(amount);
+            expect(await kernel.leagStaked()).to.be.equal(amount);
 
             await kernel.connect(user).withdraw(amount);
-            expect(await kernel.entrStaked()).to.be.equal(0);
+            expect(await kernel.leagStaked()).to.be.equal(0);
         });
 
         it('updates the delegated user\'s voting power if user delegated his balance', async function () {
@@ -406,7 +406,7 @@ describe('Kernel', function () {
             expect(await kernel.votingPower(userAddress)).to.be.equal(amount);
         });
 
-        it('returns adjusted balance if user locked entr', async function () {
+        it('returns adjusted balance if user locked leag', async function () {
             await prepareAccount(user, amount);
             await kernel.connect(user).deposit(amount);
 
@@ -586,9 +586,9 @@ describe('Kernel', function () {
         });
 
         it('works with multiple calls in the same block', async function () {
-            const multicall = (await deploy.deployContract('MulticallMock', [kernel.address, entr.address])) as MulticallMock;
+            const multicall = (await deploy.deployContract('MulticallMock', [kernel.address, leag.address])) as MulticallMock;
 
-            await entr.mint(multicall.address, amount);
+            await leag.mint(multicall.address, amount);
 
             await multicall.multiDelegate(amount, userAddress, happyPirateAddress);
 
@@ -748,8 +748,8 @@ describe('Kernel', function () {
     }
 
     async function prepareAccount (account: Signer, balance: BigNumber) {
-        await entr.mint(await account.getAddress(), balance);
-        await entr.connect(account).approve(kernel.address, balance);
+        await leag.mint(await account.getAddress(), balance);
+        await leag.connect(account).approve(kernel.address, balance);
     }
 
     function multiplierAtTs (expiryTs: number, ts: number): BigNumber {

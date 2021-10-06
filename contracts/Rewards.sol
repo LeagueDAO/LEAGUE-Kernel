@@ -84,15 +84,15 @@ contract Rewards is Ownable {
             return;
         }
 
-        uint256 totalStakedEntr = kernel.entrStaked();
-        // if there's no entr staked, it doesn't make sense to ackFunds because there's nobody to distribute them to
+        uint256 totalStakedLeag = kernel.leagStaked();
+        // if there's no leag staked, it doesn't make sense to ackFunds because there's nobody to distribute them to
         // and the calculation would fail anyways due to division by 0
-        if (totalStakedEntr == 0) {
+        if (totalStakedLeag == 0) {
             return;
         }
 
         uint256 diff = balanceNow.sub(balanceBefore);
-        uint256 multiplier = currentMultiplier.add(diff.mul(decimals).div(totalStakedEntr));
+        uint256 multiplier = currentMultiplier.add(diff.mul(decimals).div(totalStakedLeag));
 
         balanceBefore = balanceNow;
         currentMultiplier = multiplier;
@@ -131,7 +131,7 @@ contract Rewards is Ownable {
         }
     }
 
-    // setKernel sets the address of the EnterDao Kernel into the state variable
+    // setKernel sets the address of the LeagueDao Kernel into the state variable
     function setKernel(address _kernel) public {
         require(_kernel != address(0), 'kernel address must not be 0x0');
         require(msg.sender == owner(), '!owner');

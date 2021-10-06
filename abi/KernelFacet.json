@@ -293,8 +293,26 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_leag",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_rewards",
+        "type": "address"
+      }
+    ],
+    "name": "initKernel",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
-    "name": "entrStaked",
+    "name": "leagStaked",
     "outputs": [
       {
         "internalType": "uint256",
@@ -313,7 +331,7 @@
         "type": "uint256"
       }
     ],
-    "name": "entrStakedAtTs",
+    "name": "leagStakedAtTs",
     "outputs": [
       {
         "internalType": "uint256",
@@ -322,24 +340,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_entr",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_rewards",
-        "type": "address"
-      }
-    ],
-    "name": "initKernel",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
